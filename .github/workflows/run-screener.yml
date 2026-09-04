@@ -1,0 +1,54 @@
+name: Run AEO/GEO/SEO Screener
+
+# Manual, on-demand run — GitHub Actions runners have normal outbound
+# internet access, unlike a network-locked sandbox, so the automated
+# engines (Google, Bing, ChatGPT) can actually run here. This is
+# best-effort: any of those three can start blocking automated traffic at
+# any time, and Perplexity/Gemini are never automated (see
+# screener/config.py) — check the job log for per-engine errors.
+on:
+  workflow_dispatch:
+    inputs:
+      business:
+        description: "Business or practitioner name"
+        required: true
+      category:
+        description: "Service category (e.g. cosmetic dentist)"
+        required: true
+      location:
+        description: "Location (e.g. Honolulu, HI)"
+        required: true
+      website:
+        description: "Business website URL (optional but recommended)"
+        required: false
+        default: ""
+
+jobs:
+  screen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          python -m playwright install --with-deps chromium
+
+      - name: Run screener
+        run: |
+          python cli.py \
+            --business "${{ inputs.business }}" \
+            --category "${{ inputs.category }}" \
+            --location "${{ inputs.location }}" \
+            ${{ inputs.website != '' && format('--website {0}', inputs.website) || '' }} \
+            --out reports/latest.md
+
+      - name: Upload report
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-visibility-report
+          path: reports/latest.md
