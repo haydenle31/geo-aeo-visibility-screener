@@ -1,0 +1,6 @@
+# Example custom prompt file for: python cli.py --prompts prompts/example_prompts.txt
+# One prompt per line, used exactly as written. Lines starting with # are ignored.
+
+who is the best cosmetic dentist in honolulu
+best cosmetic dentist honolulu reddit
+top rated dentist for veneers in honolulu hawaii
